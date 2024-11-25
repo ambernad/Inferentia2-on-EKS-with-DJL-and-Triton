@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: bern-ml2-eks
+  region: us-east-2
+
+managedNodeGroups:
+  - name: triton-sdxl
+    labels: { model: triton-sdxl }
+    amiFamily: AmazonLinux2
+    ami: ami-0b570e26d70c07edb
+    instanceType: inf2.8xlarge
+    desiredCapacity: 1
+    iam:
+      instanceRoleARN: arn:aws:iam::623387590579:role/eksctl-bern-ml2-eks-nodegroup-djl-NodeInstanceRole-ABRTF48P86S3
+    ssh: 
+      publicKeyName: BernKeyPair-ohio
+    volumeSize: 300
+    overrideBootstrapCommand: |
+      #!/bin/bash
+      aws s3 cp s3://abernads-shared-bucket/containerd-custom-config/config-custom.toml /home/ec2-user/
+      /etc/eks/bootstrap.sh bern-ml2-eks --containerd-config-file /home/ec2-user/config-custom.toml

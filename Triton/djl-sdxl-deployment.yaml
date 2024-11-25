@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: djl-sdxl-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: djl-sdxl
+  template:
+    metadata:
+      labels:
+        app: djl-sdxl
+    spec:
+      containers:
+        - name: djl-sdxl-container
+          image: 623387590579.dkr.ecr.us-east-1.amazonaws.com/djl-sdxl:0.2
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              aws.amazon.com/neurondevice: 1
+            requests:
+              aws.amazon.com/neurondevice: 1
+      nodeSelector:
+        model: sdxl

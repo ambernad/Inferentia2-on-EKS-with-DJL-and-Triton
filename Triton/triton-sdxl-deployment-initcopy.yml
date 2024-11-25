@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triton-sdxl-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: triton-sdxl
+  template:
+    metadata:
+      labels:
+        app: triton-sdxl
+        group: triton
+    spec:
+      volumes:
+      - name: data-volume  # Define a shared volume
+        emptyDir: {}
+      - name: shm  # Add the shared memory volume
+        emptyDir:
+          medium: Memory
+          sizeLimit: 50Gi
+      initContainers:
+      - name: copy-data-from-s3
+        image: amazon/aws-cli:latest
+        command: ["sh", "-c", "aws s3 sync s3://abernads-mlmodels-repo/triton-model-repo/sdxl /models/sdxl"]
+        volumeMounts:
+        - name: data-volume  # Mount the shared volume
+          mountPath: /models
+      containers:
+      - name: triton-sdxl-container
+        image: 623387590579.dkr.ecr.us-east-2.amazonaws.com/triton-inf2:0.1
+        ports:
+        - containerPort: 8000
+        - containerPort: 8001
+        - containerPort: 8002
+        resources:
+            limits:
+              aws.amazon.com/neurondevice: 1
+            requests:
+              aws.amazon.com/neurondevice: 1
+        command:
+        - "tritonserver"
+        args:
+        - "--model-repository=/models"
+        - "--log-verbose=3"
+        - "--log-info=1"
+        - "--log-warning=1"
+        - "--log-error=1"
+        - "--disable-auto-complete-config"
+        - "--backend-config=default-max-batch-size=1"
+        volumeMounts:
+        - name: data-volume  # Mount the shared volume
+          mountPath: /models
+        - name: shm  # Mount the shared memory volume
+          mountPath: /dev/shm
+      nodeSelector:
+        model: triton-sdxl
