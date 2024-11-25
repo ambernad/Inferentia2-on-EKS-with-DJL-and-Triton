@@ -1,0 +1,15 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eks1
+  region: us-east-1
+
+managedNodeGroups:
+  - name: djl-sdxl
+    labels: { model: sdxl }
+    instanceType: inf2.xlarge
+    desiredCapacity: 1
+    ssh: 
+      publicKeyName: BernKeyPair-virginia
+    volumeSize: 300

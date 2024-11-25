@@ -1,0 +1,15 @@
+FROM deepjavalibrary/djl-serving:0.23.0-pytorch-inf2
+
+# Copy your model and logs directories into the image
+COPY sdxl-djl-bkcp /opt/ml/model
+
+# Set environment variables
+ENV MODEL_LOADING_TIMEOUT=7200
+ENV PREDICT_TIMEOUT=1800
+
+# Expose any necessary ports (if your application requires it)
+EXPOSE 8080
+
+# Specify the entry point command
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
+CMD ["serve"]
